@@ -7,13 +7,38 @@ from rest_framework import exceptions,generics
 
 from .models import Product,Review
 from .serializers import ProductListSerialier,ProductCreateSerializer,ReviewSerializer
+from rest_framework.filters import SearchFilter
 # Create your views here.
 
+
+class ProductListSearchView(generics.ListAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductListSerialier
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        title = self.request.query_params.get('title')
+        category = self.request.query_params.get('category')
+        min_price = self.request.query_params.get('min_price')
+        max_price = self.request.query_params.get('max_price')
+
+        if title:
+            queryset = queryset.filter(title__icontains=title)
+        if category:
+            queryset = queryset.filter(category__name__icontains=category)
+        if min_price:
+            queryset = queryset.filter(price__gte=min_price)
+        if max_price:
+            queryset = queryset.filter(price__lte=max_price)
+
+        return queryset
 
 
 class ProductListView(ListAPIView):
     queryset=Product.objects.all()
     serializer_class=ProductListSerialier
+    
+    
 
 
 class ProductCreateView(CreateAPIView):
@@ -47,6 +72,7 @@ class ProductByCategory(ListAPIView):
     queryset=Product.objects.all()
 
     def get_queryset(self):
+        # sourcery skip: inline-immediately-returned-variable
         category_name = self.kwargs['name']
         try:
             category = Category.objects.get(name=category_name)

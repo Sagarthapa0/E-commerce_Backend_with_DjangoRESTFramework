@@ -2,7 +2,6 @@ from .models import Product
 from rest_framework import serializers
 from .models import Review
 
-
 class ProductListSerialier(serializers.ModelSerializer):
     category = serializers.StringRelatedField()
     seller = serializers.StringRelatedField()
